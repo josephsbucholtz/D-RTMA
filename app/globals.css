@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+.control {
+  min-width: 13rem;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  background: #020617;
+  padding: 0.625rem 0.75rem;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.control:focus {
+  border-color: #22d3ee;
+}
