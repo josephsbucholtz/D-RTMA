@@ -32,6 +32,10 @@ export function ResearchCard({ result }: { result: Result }) {
               <Metric label="Risk" value={percent(insights.riskLevel)} />
               <Metric label="Evidence" value={percent(insights.evidenceSufficient)} />
             </div>
+            <div className="mt-3 rounded-lg border border-violet-400/20 bg-violet-400/10 px-3 py-2 text-xs text-violet-200">
+              <span className="font-semibold">Drex decision model</span>
+              <span className="ml-2 text-violet-300/80">{insights.model}</span>
+            </div>
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
               <Metric label="Event" value={insights.eventType.replaceAll("_", " ")} />
               <Metric label="Impact" value={percent(insights.marketImpact)} />
