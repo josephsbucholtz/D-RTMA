@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import pLimit from "p-limit";
 
-import { analyzeWithDrex } from "@/lib/nace/drex";
+import { analyzeWithDrexAgents } from "@/lib/nace/agents";
 import { getHistoricalResearchData } from "@/lib/market/historical";
 import { getLiveResearchData } from "@/lib/market/live";
 import { normalizeSymbolState } from "@/lib/market/normalize";
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const results = await Promise.allSettled(
       states.map((state) =>
         limit(() =>
-          analyzeWithDrex({
+          analyzeWithDrexAgents({
             symbol: state.symbol,
             mode: state.mode,
             timestamp: state.timestamp,
