@@ -33,7 +33,7 @@ async function runAgent(name: AgentName, state: DrexState): Promise<AgentRespons
   const config = agentInstructions[name];
   const response = await nace.systemOne({
     state: { ...state, agent_role: config.role },
-    questions: config.questions,
+    questions: config.questions as never,
   });
   return response as unknown as AgentResponse;
 }

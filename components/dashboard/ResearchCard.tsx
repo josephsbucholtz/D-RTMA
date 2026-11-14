@@ -6,19 +6,19 @@ type Result = {
   symbol: string;
   success: boolean;
   state: { bars: Array<{ timestamp: string; close: number }>; news: Array<{ id: string; headline: string; summary: string; source: string; url?: string; publishedAt: string }> };
-  insights?: { action: string; actionConfidence: number; eventType: string; riskLevel: number; marketImpact: number; evidenceSufficient: number; primaryRisk: string; model: string; conclusions: string[]; features: { return5m: number; return30m: number; volumeVsAverage: number; volatility: number; barCount: number } };
+  insights?: { action: string; actionConfidence: number; eventType: string; riskLevel: number; marketImpact: number; evidenceSufficient: number; primaryRisk: string; model: string; agents: Record<string, unknown>; conclusions: string[]; features: { return5m: number; return30m: number; volumeVsAverage: number; volatility: number; barCount: number } };
   error?: string;
 };
 
 function percent(value: number) { return `${Math.round(value * 100)}%`; }
 function signedPercent(value: number) { return `${value >= 0 ? "+" : ""}${(value * 100).toFixed(2)}%`; }
 
-export function ResearchCard({ result }: { result: Result }) {
+export function ResearchCard({ result, featured = false, compact = false, selected = false, onSelect }: { result: Result; featured?: boolean; compact?: boolean; selected?: boolean; onSelect?: () => void }) {
   const insights = result.insights;
   const latest = result.state.bars.at(-1)?.close;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl shadow-black/10">
+    <article role={onSelect ? "button" : undefined} tabIndex={onSelect ? 0 : undefined} onClick={onSelect} onKeyDown={(event) => { if (onSelect && (event.key === "Enter" || event.key === " ")) onSelect(); }} className={`overflow-hidden rounded-2xl border bg-slate-900 shadow-xl shadow-black/10 ${selected ? "border-cyan-400/60" : "border-slate-800"} ${featured ? "shadow-2xl shadow-cyan-950/20" : ""} ${onSelect ? "cursor-pointer" : ""}`}>
       <div className="flex items-start justify-between border-b border-slate-800 p-4">
         <div><p className="text-2xl font-semibold">{result.symbol}</p><p className="mt-1 text-sm text-slate-500">{latest ? `$${latest.toFixed(2)}` : "No price"}</p></div>
         {result.success && insights ? <div className="flex items-center gap-2"><SignalBadge signal={insights.action} /><span className="rounded bg-violet-400/15 px-1.5 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-200">Drex</span></div> : <SignalBadge signal="error" />}
