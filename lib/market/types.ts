@@ -25,6 +25,26 @@ export type ResearchState = {
 
 export type MarketBar = ResearchState["bars"][number];
 
+export type MarketQuote = {
+  symbol: string;
+  timestamp: string;
+  bidPrice: number;
+  bidSize: number;
+  askPrice: number;
+  askSize: number;
+  spread: number;
+  spreadPercent: number;
+  lastPrice: number;
+};
+
+export type LiveMarketSnapshot = {
+  mode: "live";
+  generatedAt: string;
+  barsBySymbol: Record<string, MarketBar[]>;
+  quotesBySymbol: Record<string, MarketQuote>;
+  news: NewsArticle[];
+};
+
 export type NewsArticle = {
   id: string;
   headline: string;
