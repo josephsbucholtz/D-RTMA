@@ -10,14 +10,51 @@ The intended product is a quantitative research and decision-support dashboard f
 
 ```text
 app/
-├── api/                    # Reserved for server-side Route Handlers; currently empty
+├── home/
+│   └── page.tsx            # Current home page
+├── globals.css             # Global Tailwind CSS import
+└── layout.tsx              # Root layout, metadata, and Geist fonts
+└── api/
+│       ├── research/
+│       │   └── route.ts
+│       ├── replay/
+│       │   └── route.ts
+│       └── symbols/
+│           └── [symbol]/
+│               └── route.ts
 ├── home/
 │   └── page.tsx            # Current home page
 ├── globals.css             # Global Tailwind CSS import
 └── layout.tsx              # Root layout, metadata, and Geist fonts
 
-components/                 # Reserved for reusable React components; currently empty
-lib/                        # Reserved for shared application logic; currently empty
+├── components/
+│   ├── dashboard/
+│   │   ├── SymbolGrid.tsx
+│   │   ├── SymbolCard.tsx
+│   │   ├── SignalBadge.tsx
+│   │   ├── NewsTimeline.tsx
+│   │   └── ResearchPanel.tsx
+│   └── charts/
+│       └── PriceChart.tsx
+│
+├── lib/
+│   ├── nace/
+│   │   ├── client.ts
+│   │   ├── drex.ts
+│   │   └── ndi.ts
+│   ├── market/
+│   │   ├── source.ts
+│   │   ├── historical.ts
+│   │   └── types.ts
+│   ├── research/
+│   │   ├── analyze-symbol.ts
+│   │   ├── features.ts
+│   │   └── policy.ts
+│   ├── replay/
+│   │   └── replay-engine.ts
+│   └── validation/
+│       └── schemas.ts
+│
 public/                     # Static assets and starter SVGs
 types/
 ├── cache-life.d.ts         # Next.js generated type declarations
