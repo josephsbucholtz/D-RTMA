@@ -14,3 +14,12 @@
 .control:focus {
   border-color: #22d3ee;
 }
+
+.status-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: #34d399;
+  box-shadow: 0 0 0 4px rgb(52 211 153 / 0.1), 0 0 12px rgb(52 211 153 / 0.55);
+}
