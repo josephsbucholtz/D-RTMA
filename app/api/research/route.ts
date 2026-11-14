@@ -1,36 +1,75 @@
 import { NextResponse } from "next/server";
+import pLimit from "p-limit";
 
-import { SYMBOLS } from "@/lib/market/config";
-import { getHistoricalResearchData } from "@/lib/market/historical";
-import { normalizeSymbolState } from "@/lib/market/normalize";
-import { getLiveSymbolState } from "@/lib/market/live";
 import { analyzeWithDrex } from "@/lib/nace/drex";
+import { getHistoricalResearchData } from "@/lib/market/historical";
+import { getLiveResearchData } from "@/lib/market/live";
+import { normalizeSymbolState } from "@/lib/market/normalize";
+import { isSupportedSymbol, SYMBOLS } from "@/lib/market/config";
+import type { DataMode, ResearchState } from "@/lib/market/types";
+
+const limit = pLimit(2);
+const DEFAULT_HISTORICAL_DATE = "2026-11-13";
+
+function isValidDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
+}
+
+function errorText(error: unknown) {
+  return error instanceof Error ? error.message : "Symbol analysis failed";
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-
-    const mode = body.mode ?? "historical";
-    const date = body.date ?? "2026-11-13";
+    const mode: DataMode = body.mode ?? "historical";
+    const date = body.date ?? DEFAULT_HISTORICAL_DATE;
 
     if (mode !== "historical" && mode !== "live") {
       return NextResponse.json(
+        { error: "mode must be historical or live", code: "invalid_mode" },
+        { status: 400 }
+      );
+    }
+
+    if (mode === "historical" && !isValidDate(date)) {
+      return NextResponse.json(
+        { error: "date must be a valid YYYY-MM-DD date", code: "invalid_date" },
+        { status: 400 }
+      );
+    }
+
+    const requestedSymbols = body.symbols ?? SYMBOLS;
+    if (
+      !Array.isArray(requestedSymbols) ||
+      requestedSymbols.length < 1 ||
+      requestedSymbols.length > SYMBOLS.length ||
+      requestedSymbols.some(
+        (symbol) => typeof symbol !== "string" || !isSupportedSymbol(symbol)
+      )
+    ) {
+      return NextResponse.json(
         {
-          error: `Invalid mode: ${mode}. Use "historical" or "live".`,
+          error: `symbols must contain supported values: ${SYMBOLS.join(", ")}`,
+          code: "invalid_symbols",
         },
         { status: 400 }
       );
     }
 
-    let states;
+    const symbols = requestedSymbols.map((symbol: string) => symbol.toUpperCase());
+    let states: ResearchState[];
+    let generatedAt = new Date().toISOString();
 
     if (mode === "historical") {
-      const historicalData = await getHistoricalResearchData(
-        date,
-        SYMBOLS
-      );
-
-      states = SYMBOLS.map((symbol) =>
+      const historicalData = await getHistoricalResearchData(date, symbols);
+      generatedAt = historicalData.generatedAt;
+      states = symbols.map((symbol) =>
         normalizeSymbolState(symbol, {
           ...historicalData,
           mode: "historical",
@@ -38,62 +77,69 @@ export async function POST(request: Request) {
         })
       );
     } else {
-      states = SYMBOLS.map((symbol) =>
-        getLiveSymbolState(symbol)
+      const liveData = await getLiveResearchData(symbols);
+      generatedAt = liveData.generatedAt;
+      states = symbols.map((symbol) =>
+        normalizeSymbolState(symbol, {
+          ...liveData,
+          mode: "live",
+        })
       );
     }
 
-    // All symbols are sent to Drex concurrently.
     const results = await Promise.allSettled(
       states.map((state) =>
-        analyzeWithDrex({
-          symbol: state.symbol,
-          mode: state.mode,
-          timestamp: state.timestamp,
-          bars: state.bars,
-          news: state.news,
-        })
+        limit(() =>
+          analyzeWithDrex({
+            symbol: state.symbol,
+            mode: state.mode,
+            timestamp: state.timestamp,
+            bars: state.bars,
+            news: state.news,
+          })
+        )
       )
     );
 
     return NextResponse.json({
       mode,
       ...(mode === "historical" ? { date } : {}),
+      generatedAt,
       results: results.map((result, index) => {
-        const symbol = states[index].symbol;
+        const state = states[index];
 
         if (result.status === "fulfilled") {
           return {
-            symbol,
+            symbol: state.symbol,
             success: true,
+            state,
             analysis: result.value,
           };
         }
 
-        const error =
-          result.reason instanceof Error
-            ? result.reason.message
-            : String(result.reason);
-
-        console.error(`[Research] ${symbol} failed:`, result.reason);
+        console.error("[Research] Symbol analysis failed", {
+          symbol: state.symbol,
+          mode,
+          error: errorText(result.reason),
+          timestamp: new Date().toISOString(),
+        });
 
         return {
-          symbol,
+          symbol: state.symbol,
           success: false,
-          error,
+          state,
+          error: errorText(result.reason),
         };
       }),
     });
   } catch (error) {
-    console.error("[Research API] Failed:", error);
+    console.error("[Research API] Failed", {
+      error: errorText(error),
+      timestamp: new Date().toISOString(),
+    });
 
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Research request failed",
-      },
+      { error: "Research request failed", code: "research_request_failed" },
       { status: 500 }
     );
   }
