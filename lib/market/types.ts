@@ -23,6 +23,8 @@ export type ResearchState = {
   }>;
 };
 
+export type MarketBar = ResearchState["bars"][number];
+
 export type NewsArticle = {
   id: string;
   headline: string;
@@ -44,4 +46,17 @@ export type ResearchResult = {
   evidenceSufficient: number;
   primaryRisk: string;
   timestamp: string;
+};
+
+export type ResearchResponse = {
+  mode: DataMode;
+  date?: string;
+  generatedAt: string;
+  results: Array<{
+    symbol: string;
+    success: boolean;
+    state: ResearchState;
+    analysis?: unknown;
+    error?: string;
+  }>;
 };
