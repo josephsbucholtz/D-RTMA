@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { BarChart3, CircleDot, RefreshCw } from "lucide-react";
 import { Clock } from "@/components/dashboard/Clock";
+import { LiveMarketGrid } from "@/components/dashboard/LiveMarketGrid";
 import { ResearchCard } from "@/components/dashboard/ResearchCard";
 
 type Mode = "live" | "historical";
@@ -15,18 +16,19 @@ export default function Home() {
   const [date, setDate] = useState("2026-11-13");
   const [data, setData] = useState<ResponseData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [autoAnalyzeNews, setAutoAnalyzeNews] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const detailPanelRef = useRef<HTMLDivElement | null>(null);
 
-  async function runResearch() {
+  async function runResearch(requestedMode: Mode = mode) {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch("/api/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, ...(mode === "historical" ? { date } : {}) }),
+        body: JSON.stringify({ mode: requestedMode, ...(requestedMode === "historical" ? { date } : {}) }),
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error ?? "Research request failed");
@@ -77,8 +79,11 @@ export default function Home() {
               <button type="button" onClick={runResearch} disabled={loading} className="inline-flex items-center gap-2 rounded-lg bg-cyan-400 px-5 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-50">{loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}{loading ? "Analyzing with Drex…" : data ? "Refresh research" : "Run research"}</button>
             </div>
           </div>
+          <p className="mt-4 text-xs text-slate-500">Live prices, quotes, spread, and news refresh automatically. Drex stays idle unless you run research or enable the news trigger.</p>
           {error && <p className="mt-4 rounded-lg border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-200">{error}</p>}
         </section>
+
+        <LiveMarketGrid enabled={mode === "live"} onNewNews={() => { if (autoAnalyzeNews && !loading) void runResearch("live"); }} />
 
         {data ? (
           <>
