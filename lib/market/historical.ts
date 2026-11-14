@@ -1,40 +1,40 @@
-import { Alpaca, TimeFrame, } from "@alpacahq/alpaca-trade-api";
+// src/lib/market/historical.ts
 
-const alpaca = new Alpaca({
-  keyId: process.env.APCA_API_KEY_ID!,
-  secret: process.env.APCA_API_SECRET_KEY!,
-  paper: true,
-});
+import {
+  TimeFrame,
+} from "@alpacahq/alpaca-trade-api";
+import {getAlpacaClient } from "@/lib/client"
+import { SYMBOLS } from "./config";
 
-const SYMBOLS = [
-  "AAPL",
-  "MSFT",
-  "NVDA",
-  "TSLA",
-  "AMZN",
-  "META",
-  "GOOGL",
-  "AMD",
-  "NFLX",
-  "SPY",
-];
 
-const START = new Date("2026-11-13T14:30:00Z");
-const END = new Date("2026-11-13T21:00:00Z");
 
-export async function getHistoricalMarketData() {
-  return alpaca.marketData.getStockBars({
-    symbols: SYMBOLS,
-    timeframe: TimeFrame.Minute,
-    start: START,
-    end: END,
-  });
-}
+export async function getHistoricalResearchData(
+  date = "2026-11-13",
+  symbols: readonly string[] = SYMBOLS
+) {
+  const alpaca = getAlpacaClient();
 
-export async function getHistoricalNews() {
-  return alpaca.marketData.collectNews({
-    symbols: SYMBOLS,
-    start: START,
-    end: END,
-  });
+  const start = new Date(`${date}T00:00:00Z`);
+  const end = new Date(`${date}T23:59:59Z`);
+
+  const [barsBySymbol, news] = await Promise.all([
+    alpaca.marketData.getStockBars({
+      symbols: [...symbols],
+      timeframe: TimeFrame.Minute,
+      start,
+      end,
+    }),
+
+    alpaca.marketData.collectNews({
+      symbols: [...symbols],
+      start,
+      end,
+    }),
+  ]);
+
+  return {
+    date,
+    barsBySymbol,
+    news,
+  };
 }
