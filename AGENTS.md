@@ -78,13 +78,13 @@ API keys must remain server-side. Never use NEXT_PUBLIC_ for credentials.
 
 Use Route Handlers under src/app/api/** as the boundary between the browser and approved Nace services.
 Nace-only integration boundary
-All AI, document understanding, search, news retrieval, and market-data retrieval must use approved Nace capabilities or supplied project data.
+All AI decisions, document understanding, and search must use approved Nace capabilities. Market data and news may come from Alpaca (approved) or supplied project data.
 - Use Drex for structured decisions and classifications.
 - Use NDI for unstructured documents such as filings, PDFs, and reports.
 - Use Nace Search or another explicitly approved Nace capability for permitted research retrieval.
 - Use project-provided historical JSON fixtures when a Nace market-data feed is unavailable.
-- Do not add a third-party market-data, news, LLM, sentiment, or trading API.
 - Do not imply that Nace provides a native stock-exchange feed unless the current Nace documentation or hackathon rules explicitly confirm it.
+- Alpaca is approved by the project owner for read-only market data and news (paper keys only). Use ALPACA_KEY_ID and ALPACA_SECRET_KEY server-side only, never NEXT_PUBLIC_. Do not add any other third-party market-data, news, LLM, sentiment, or trading API, and no order placement.
 - If live market prices cannot be obtained through an approved Nace capability, the application must clearly label the mode as historical or unavailable rather than silently using another provider.
 Research-only behavior
 - Do not add order placement, brokerage execution, or real-money trading logic.
