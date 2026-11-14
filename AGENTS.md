@@ -1,74 +1,36 @@
-Project overview
-This is a Next.js App Router application written in TypeScript and styled with Tailwind CSS. It is a quantitative research and decision-support dashboard for market data and financial news.
+# D-RTMA agent instructions
 
-The application produces explainable research signals such as buy, hold, or sell. It does not place real trades and must not be extended to execute trades without explicit project-owner approval.
+## Project overview
 
-The primary workflow is:
-Market data and news
-        ↓
-Normalization and feature calculation
-        ↓
-Drex research analysis
-        ↓
-Deterministic research policy
-        ↓
-Dashboard, historical replay, and stored results
-Technology
-- Next.js App Router
-- TypeScript with strict typing
-- Tailwind CSS
-- Nace TypeScript SDK for Drex, NDI, Search, and other approved Nace integrations
-- No Alpaca, Polygon, Finnhub, Yahoo Finance, OpenAI, or other external AI/data provider integrations unless the project owner explicitly changes this requirement
-- Server-side API routes for all external API calls
-- React client components only where interactivity is required
-Repository structure
-src/
-├── app/
-│   ├── page.tsx
-│   ├── dashboard/
-│   │   └── page.tsx
-│   ├── symbols/
-│   │   └── [symbol]/
-│   │       └── page.tsx
-│   └── api/
-│       ├── research/
-│       │   └── route.ts
-│       ├── replay/
-│       │   └── route.ts
-│       └── symbols/
-│           └── [symbol]/
-│               └── route.ts
-│
-├── components/
-│   ├── dashboard/
-│   │   ├── SymbolGrid.tsx
-│   │   ├── SymbolCard.tsx
-│   │   ├── SignalBadge.tsx
-│   │   ├── NewsTimeline.tsx
-│   │   └── ResearchPanel.tsx
-│   └── charts/
-│       └── PriceChart.tsx
-│
-├── lib/
-│   ├── nace/
-│   │   ├── client.ts
-│   │   ├── drex.ts
-│   │   └── ndi.ts
-│   ├── market/
-│   │   ├── source.ts
-│   │   ├── historical.ts
-│   │   └── types.ts
-│   ├── research/
-│   │   ├── analyze-symbol.ts
-│   │   ├── features.ts
-│   │   └── policy.ts
-│   ├── replay/
-│   │   └── replay-engine.ts
-│   └── validation/
-│       └── schemas.ts
-│
-└── data/
-    └── historical-events.json
+D-RTMA is a Next.js application using the App Router, TypeScript, React, and Tailwind CSS. The repository is currently a minimal starter application. The implemented page is a simple home page at `/home`, and `/` redirects to `/home`.
+
+The intended product is a quantitative research and decision-support dashboard for market data and financial news. It produces explainable research signals such as buy, hold, or sell. It must not place real trades or contain brokerage execution logic without explicit project-owner approval.
+
+## Current repository structure
+
+```text
+app/
+├── api/                    # Reserved for server-side Route Handlers; currently empty
+├── home/
+│   └── page.tsx            # Current home page
+├── globals.css             # Global Tailwind CSS import
+└── layout.tsx              # Root layout, metadata, and Geist fonts
+
+components/                 # Reserved for reusable React components; currently empty
+lib/                        # Reserved for shared application logic; currently empty
+public/                     # Static assets and starter SVGs
+types/
+├── cache-life.d.ts         # Next.js generated type declarations
+├── root-params.d.ts        # Next.js generated type declarations
+├── routes.d.ts             # Next.js generated route declarations
+└── validator.ts            # TypeScript validation declarations
+
+eslint.config.mjs
+next.config.ts
+package.json
+README.md
+tsconfig.json
+```
 Non-negotiable boundaries
 Server-only code
 The following must never be imported by client components:
