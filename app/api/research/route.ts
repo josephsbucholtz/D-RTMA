@@ -7,6 +7,7 @@ import { getLiveResearchData } from "@/lib/market/live";
 import { normalizeSymbolState } from "@/lib/market/normalize";
 import { isSupportedSymbol, SYMBOLS } from "@/lib/market/config";
 import type { DataMode, ResearchState } from "@/lib/market/types";
+import { buildResearchInsights } from "@/lib/research/insights";
 
 const limit = pLimit(2);
 const DEFAULT_HISTORICAL_DATE = "2026-11-13";
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
             success: true,
             state,
             analysis: result.value,
+            insights: buildResearchInsights(state, result.value),
           };
         }
 
