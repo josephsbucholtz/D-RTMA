@@ -6,7 +6,6 @@ import {
 import { buildResearchStates } from "@/lib/market/normalize";
 import { analyzeSymbol } from "@/lib/nace/drex";
 
-export const runtime = "nodejs";
 
 export async function POST() {
   try {
