@@ -83,7 +83,6 @@ All AI, document understanding, search, news retrieval, and market-data retrieva
 - Use NDI for unstructured documents such as filings, PDFs, and reports.
 - Use Nace Search or another explicitly approved Nace capability for permitted research retrieval.
 - Use project-provided historical JSON fixtures when a Nace market-data feed is unavailable.
-- Do not add a third-party market-data, news, LLM, sentiment, or trading API.
 - Do not imply that Nace provides a native stock-exchange feed unless the current Nace documentation or hackathon rules explicitly confirm it.
 - If live market prices cannot be obtained through an approved Nace capability, the application must clearly label the mode as historical or unavailable rather than silently using another provider.
 Research-only behavior
