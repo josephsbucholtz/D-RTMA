@@ -11,8 +11,9 @@ type Result = Parameters<typeof ResearchCard>[0]["result"];
 type ResponseData = { mode: Mode; date?: string; generatedAt: string; results: Result[] };
 
 export default function Home() {
-  const [mode, setMode] = useState<Mode>("historical");
+  const [mode, setMode] = useState<Mode>("live");
   const [date, setDate] = useState("2026-11-13");
+  const [selectedSymbol, setSelectedSymbol] = useState("AAPL");
   const [data, setData] = useState<ResponseData | null>(null);
   const [loading, setLoading] = useState(false);
   const [autoAnalyzeNews, setAutoAnalyzeNews] = useState(false);
@@ -69,7 +70,7 @@ export default function Home() {
           {error && <p className="mt-4 rounded-lg border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-200">{error}</p>}
         </section>
 
-        <LiveMarketGrid enabled={mode === "live"} onNewNews={() => { if (autoAnalyzeNews && !loading) void runResearch("live"); }} />
+        <LiveMarketGrid enabled={mode === "live"} selectedSymbol={selectedSymbol} onSelect={setSelectedSymbol} onNewNews={() => { if (autoAnalyzeNews && !loading) void runResearch("live"); }} />
 
         {data ? (
           <>

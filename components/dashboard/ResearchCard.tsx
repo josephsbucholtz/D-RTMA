@@ -6,7 +6,7 @@ type Result = {
   symbol: string;
   success: boolean;
   state: { bars: Array<{ timestamp: string; close: number }>; news: Array<{ id: string; headline: string; summary: string; source: string; url?: string; publishedAt: string }> };
-  insights?: { action: string; actionConfidence: number; eventType: string; riskLevel: number; marketImpact: number; evidenceSufficient: number; primaryRisk: string; conclusions: string[]; features: { return5m: number; return30m: number; volumeVsAverage: number; volatility: number; barCount: number } };
+  insights?: { action: string; actionConfidence: number; eventType: string; riskLevel: number; marketImpact: number; evidenceSufficient: number; primaryRisk: string; model: string; conclusions: string[]; features: { return5m: number; return30m: number; volumeVsAverage: number; volatility: number; barCount: number } };
   error?: string;
 };
 
@@ -21,7 +21,7 @@ export function ResearchCard({ result }: { result: Result }) {
     <article className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl shadow-black/10">
       <div className="flex items-start justify-between border-b border-slate-800 p-4">
         <div><p className="text-2xl font-semibold">{result.symbol}</p><p className="mt-1 text-sm text-slate-500">{latest ? `$${latest.toFixed(2)}` : "No price"}</p></div>
-        {result.success && insights ? <SignalBadge signal={insights.action} /> : <SignalBadge signal="error" />}
+        {result.success && insights ? <div className="flex items-center gap-2"><SignalBadge signal={insights.action} /><span className="rounded bg-violet-400/15 px-1.5 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-200">Drex</span></div> : <SignalBadge signal="error" />}
       </div>
       <div className="p-4">
         <PriceChart bars={result.state.bars} />

@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import type { LiveMarketSnapshot, MarketBar } from "@/lib/market/types";
 import { PriceChart } from "@/components/charts/PriceChart";
 
-type Props = { enabled: boolean; onNewNews?: (ids: string[]) => void };
+type Props = { enabled: boolean; selectedSymbol?: string; onSelect?: (symbol: string) => void; onNewNews?: (ids: string[]) => void };
 
-export function LiveMarketGrid({ enabled, onNewNews }: Props) {
+export function LiveMarketGrid({ enabled, selectedSymbol, onSelect, onNewNews }: Props) {
   const [snapshot, setSnapshot] = useState<LiveMarketSnapshot | null>(null);
   const [history, setHistory] = useState<Record<string, MarketBar[]>>({});
   const [error, setError] = useState<string | null>(null);
@@ -67,18 +67,19 @@ export function LiveMarketGrid({ enabled, onNewNews }: Props) {
         <div><h2 className="text-xl font-semibold">Live market standings</h2><p className="text-sm text-slate-500">Refreshing every 10 seconds · Alpaca IEX feed · no Drex calls</p></div>
         {error && <span className="text-xs text-amber-300">Last refresh failed; showing latest snapshot</span>}
       </div>
+      {selectedSymbol && snapshot.quotesBySymbol[selectedSymbol] && <div><p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Selected ticker</p><LiveSymbolCard symbol={selectedSymbol} quote={snapshot.quotesBySymbol[selectedSymbol]} bars={history[selectedSymbol] ?? snapshot.barsBySymbol[selectedSymbol] ?? []} featured onSelect={onSelect} /></div>}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-        {Object.keys(snapshot.quotesBySymbol).map((symbol) => <LiveSymbolCard key={symbol} symbol={symbol} quote={snapshot.quotesBySymbol[symbol]} bars={history[symbol] ?? snapshot.barsBySymbol[symbol] ?? []} />)}
+        {Object.keys(snapshot.quotesBySymbol).filter((symbol) => symbol !== selectedSymbol).map((symbol) => <LiveSymbolCard key={symbol} symbol={symbol} quote={snapshot.quotesBySymbol[symbol]} bars={history[symbol] ?? snapshot.barsBySymbol[symbol] ?? []} onSelect={onSelect} />)}
       </div>
       <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p className="mb-3 text-sm font-medium text-slate-300">Incoming news monitor <span className="text-slate-500">({snapshot.news.length} recent)</span></p><div className="flex flex-wrap gap-2">{snapshot.news.slice(0, 8).map((article) => <span key={article.id} className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">{article.headline}</span>)}</div></div>
     </section>
   );
 }
 
-function LiveSymbolCard({ symbol, quote, bars }: { symbol: string; quote: LiveMarketSnapshot["quotesBySymbol"][string]; bars: MarketBar[] }) {
+function LiveSymbolCard({ symbol, quote, bars, featured = false, onSelect }: { symbol: string; quote: LiveMarketSnapshot["quotesBySymbol"][string]; bars: MarketBar[]; featured?: boolean; onSelect?: (symbol: string) => void }) {
   const first = bars[0]?.close ?? quote.lastPrice;
   const change = first > 0 ? (quote.lastPrice - first) / first : 0;
-  return <article className="rounded-2xl border border-slate-800 bg-slate-900 p-4"><div className="flex items-start justify-between"><div><h3 className="text-lg font-semibold">{symbol}</h3><p className="text-2xl font-medium text-slate-100">${quote.lastPrice.toFixed(2)}</p><p className={`text-xs ${change >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{change >= 0 ? "+" : ""}{(change * 100).toFixed(2)}% since monitor start</p></div><div className="text-right text-xs text-slate-500"><p>Bid / Ask</p><p className="mt-1 font-mono text-slate-300">${quote.bidPrice.toFixed(2)} / ${quote.askPrice.toFixed(2)}</p></div></div><div className="mt-3"><PriceChart bars={bars} /></div><dl className="grid grid-cols-3 gap-2 border-t border-slate-800 pt-3 text-xs"><Metric label="Spread" value={`$${quote.spread.toFixed(4)}`} /><Metric label="Spread %" value={`${(quote.spreadPercent * 100).toFixed(3)}%`} /><Metric label="Sizes" value={`${quote.bidSize} / ${quote.askSize}`} /></dl></article>;
+  return <article role="button" tabIndex={0} onClick={() => onSelect?.(symbol)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") onSelect?.(symbol); }} className={`cursor-pointer rounded-2xl border bg-slate-900 p-4 transition hover:border-cyan-400/60 ${featured ? "border-cyan-400/50 p-6 shadow-2xl shadow-cyan-950/30" : "border-slate-800"}`}><div className="flex items-start justify-between"><div><h3 className={`${featured ? "text-3xl" : "text-lg"} font-semibold`}>{symbol}</h3><p className={`${featured ? "text-5xl" : "text-2xl"} mt-1 font-medium text-slate-100`}>${quote.lastPrice.toFixed(2)}</p><p className={`text-xs ${change >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{change >= 0 ? "+" : ""}{(change * 100).toFixed(2)}% since monitor start</p></div><div className="text-right text-xs text-slate-500"><p>Bid / Ask</p><p className="mt-1 font-mono text-slate-300">${quote.bidPrice.toFixed(2)} / ${quote.askPrice.toFixed(2)}</p></div></div><div className="mt-3"><PriceChart bars={bars} /></div><dl className="grid grid-cols-3 gap-2 border-t border-slate-800 pt-3 text-xs"><Metric label="Spread" value={`$${quote.spread.toFixed(4)}`} /><Metric label="Spread %" value={`${(quote.spreadPercent * 100).toFixed(3)}%`} /><Metric label="Sizes" value={`${quote.bidSize} / ${quote.askSize}`} /></dl><p className="mt-3 text-xs text-slate-500">Click to focus this ticker</p></article>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) { return <div><dt className="text-slate-500">{label}</dt><dd className="mt-1 text-slate-200">{value}</dd></div>; }
