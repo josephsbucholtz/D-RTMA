@@ -44,6 +44,7 @@ export function ResearchCard({ result }: { result: Result }) {
               <Metric label="Volume vs avg" value={`${insights.features.volumeVsAverage.toFixed(2)}x`} />
               <Metric label="Primary risk" value={insights.primaryRisk.replaceAll("_", " ")} />
             </dl>
+            {!compact && <details className="mt-3"><summary className="cursor-pointer text-xs font-medium text-violet-300">Drex agent panel (market · news · risk)</summary><div className="mt-2 grid grid-cols-3 gap-2 text-[10px] uppercase tracking-wider text-slate-500">{["market", "news", "risk"].map((agent) => <div key={agent} className="rounded border border-slate-800 px-2 py-2"><span className="block text-slate-300">{agent}</span><span>complete</span></div>)}</div></details>}
             <details className="mt-4 group"><summary className="cursor-pointer text-sm font-medium text-cyan-300">Conclusions drawn</summary><ul className="mt-2 space-y-2 text-xs leading-5 text-slate-400">{insights.conclusions.map((conclusion) => <li key={conclusion}>• {conclusion}</li>)}</ul></details>
             <details className="mt-4 group"><summary className="cursor-pointer text-sm font-medium text-cyan-300">Related news ({result.state.news.length})</summary><div className="mt-3"><NewsPanel news={result.state.news} /></div></details>
           </>
